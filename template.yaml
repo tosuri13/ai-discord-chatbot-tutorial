@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+
+Resources:
+  AiDiscordChatbotApiGateway:
+    Type: "AWS::Serverless::Api"
+    Properties:
+      Name: "ai-discord-chatbot-api"
+      OpenApiVersion: "3.0.0"
+      StageName: "v1"
+
+  AiDiscordChatbotApiPostFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      CodeUri: "."
+      Events:
+        AiDiscordChatbotApiEvents:
+          Type: "Api"
+          Properties:
+            Path: "/"
+            Method: "POST"
+            RestApiId: !Ref AiDiscordChatbotApiGateway
+      FunctionName: "ai-discord-chatbot-api-post-function"
+      Handler: "function.handler"
+      Role: !GetAtt AiDiscordChatbotFunctionRole.Arn
+      Runtime: "python3.11"
+
+  AiDiscordChatbotFunctionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: "ai-discord-chatbot-function-policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action: 
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                  - "ssm:GetParameter"
+                Resource: "*"
+      RoleName: "ai-discord-chatbot-function-role"

@@ -1,7 +1,7 @@
 import json
-import os
 from enum import Enum
 
+import boto3
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 
@@ -17,12 +17,19 @@ class InteractionResponseType(Enum):
 
 
 def _validate(headers, raw_body):
-    smessage = f"{headers['x-signature-timestamp']}{raw_body}".encode()
+    message = f"{headers['x-signature-timestamp']}{raw_body}".encode()
     signature = bytes.fromhex(headers["x-signature-ed25519"])
-    verify_key = VerifyKey(bytes.fromhex(os.environ["DISCORD_PUBLIC_KEY"]))
+
+    ssm_client = boto3.client("ssm")
+    response = ssm_client.get_parameter(
+        Name="/AI_DISCORD_CHATBOT/PUBLIC_KEY",
+        WithDecryption=True,
+    )
+    public_key = response["Parameter"]["Value"]
+    verify_key = VerifyKey(bytes.fromhex(public_key))
 
     try:
-        verify_key.verify(smessage, signature)
+        verify_key.verify(message, signature)
     except BadSignatureError:
         return False
 
