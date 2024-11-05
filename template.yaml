@@ -22,6 +22,7 @@ Resources:
             RestApiId: !Ref AiDiscordChatbotApiGateway
       FunctionName: "ai-discord-chatbot-api-post-function"
       Handler: "function.handler"
+      MemorySize: 512
       Role: !GetAtt AiDiscordChatbotFunctionRole.Arn
       Runtime: "python3.11"
 

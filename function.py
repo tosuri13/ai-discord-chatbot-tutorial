@@ -43,7 +43,7 @@ def _handle_interaction(request):
         case InteractionRequestType.PING:
             return json.dumps(
                 {
-                    "type": InteractionResponseType.PONG,
+                    "type": InteractionResponseType.PONG.value,
                 }
             )
         case InteractionRequestType.APPLICATION_COMMAND:
@@ -52,7 +52,7 @@ def _handle_interaction(request):
             if command_name == "hello":
                 return json.dumps(
                     {
-                        "type": InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+                        "type": InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE.value,
                         "data": {
                             "content": "Hello!!",
                         },
