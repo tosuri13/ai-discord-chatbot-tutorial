@@ -58,6 +58,26 @@ Resources:
       Runtime: "python3.11"
       Timeout: 60
 
+  AiDiscordChatbotWorkerAskFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      CodeUri: "."
+      EventInvokeConfig:
+        MaximumRetryAttempts: 0
+      Events:
+        AiDiscordChatbotSnsEvents:
+          Type: "SNS"
+          Properties:
+            FilterPolicy:
+              command:
+                - "ask"
+            Topic: !Ref AiDiscordChatbotTopic
+      FunctionName: "ai-discord-chatbot-worker-ask-function"
+      Handler: "src.functions.worker.ask.function.handler"
+      Role: !GetAtt AiDiscordChatbotFunctionRole.Arn
+      Runtime: "python3.11"
+      Timeout: 60
+
   AiDiscordChatbotFunctionRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -75,6 +95,7 @@ Resources:
             Statement:
               - Effect: "Allow"
                 Action: 
+                  - "bedrock:InvokeModel"
                   - "logs:CreateLogGroup"
                   - "logs:CreateLogStream"
                   - "logs:PutLogEvents"

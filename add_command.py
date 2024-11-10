@@ -27,8 +27,16 @@ if __name__ == "__main__":
         },
         data=json.dumps(
             {
-                "name": "hello",
-                "description": "チャットボットに挨拶をしよう!!",
+                "name": "ask",
+                "description": "チャットボットに質問してみよう!!",
+                "options": [
+                    {
+                        "name": "question",
+                        "description": "質問をここに書いてね",
+                        "required": True,
+                        "type": 3,
+                    }
+                ],
             }
         ),
     )
