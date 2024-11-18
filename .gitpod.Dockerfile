@@ -7,9 +7,9 @@ RUN pip install -r requirements.txt
 # AWS CLIのインストール
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "aws-cli.zip" && \
   unzip aws-cli.zip -d aws-cli && \
-  sudo ./aws-cli/install && \
+  sudo ./aws-cli/install
 
 # AWS SAM CLIのインストール
 RUN curl "https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip" -o "aws-sam-cli.zip" && \
   unzip aws-sam-cli.zip -d aws-sam-cli && \
-  sudo ./aws-sam-cli/install && \
+  sudo ./aws-sam-cli/install
