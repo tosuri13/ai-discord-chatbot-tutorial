@@ -1,7 +1,7 @@
-FROM gitpod/workspace-full:2024-11-15-13-22-52
+FROM gitpod/workspace-python-3.11:2024-11-20-08-19-55
 
 # Python環境のセットアップ
-COPY requirements.txt ./requirements.txt
+COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 # AWS CLIのインストール
