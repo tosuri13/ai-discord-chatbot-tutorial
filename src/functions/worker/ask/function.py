@@ -1,18 +1,11 @@
 import json
+import os
 
 import boto3
 import requests
 
-
-def _get_parameter(key):
-    ssm_client = boto3.client("ssm")
-
-    response = ssm_client.get_parameter(
-        Name=key,
-        WithDecryption=True,
-    )
-
-    return response["Parameter"]["Value"]
+DISCORD_APPLICATION_ID = os.environ["DISCORD_APPLICATION_ID"]
+DISCORD_BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 
 
 def _generate_answer(question):
@@ -60,18 +53,15 @@ def handler(event: dict, context: dict):
             question = request["data"]["options"][0]["value"]
             answer = _generate_answer(question)
 
-            application_id = _get_parameter(key="/AI_DISCORD_CHATBOT/APPLICATION_ID")
-            bot_token = _get_parameter(key="/AI_DISCORD_CHATBOT/BOT_TOKEN")
-
             response = requests.post(
-                url=f"https://discord.com/api/v10/webhooks/{application_id}/{request['token']}",
+                url=f"https://discord.com/api/v10/webhooks/{DISCORD_APPLICATION_ID}/{request['token']}",
                 data=json.dumps(
                     {
                         "content": answer,
                     }
                 ),
                 headers={
-                    "Authorization": f"Bot {bot_token}",
+                    "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
                     "Content-Type": "application/json",
                 },
             )

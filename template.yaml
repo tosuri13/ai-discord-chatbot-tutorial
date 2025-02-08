@@ -1,6 +1,17 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: "AWS::Serverless-2016-10-31"
 
+Parameters:
+  DiscordApplicationId:
+    Type: String
+    Description: "Application ID for Discord Bot"
+  DiscordBotToken:
+    Type: String
+    Description: "Bot Token for Discord Bot"
+  DiscordPublicKey:
+    Type: String
+    Description: "Public Key for Discord Bot"
+
 Resources:
   AiDiscordChatbotApiGateway:
     Type: "AWS::Serverless::Api"
@@ -14,17 +25,14 @@ Resources:
     Properties:
       TopicName: "ai-discord-chatbot-topic"
 
-  AiDiscordChatbotTopicArnParameter:
-    Type: 'AWS::SSM::Parameter'
-    Properties:
-      Name: "/AI_DISCORD_CHATBOT/TOPIC_ARN"
-      Type: String
-      Value: !Ref AiDiscordChatbotTopic
-
   AiDiscordChatbotApiPostFunction:
     Type: "AWS::Serverless::Function"
     Properties:
       CodeUri: "."
+      Environment:
+        Variables:
+          DISCORD_PUBLIC_KEY: !Ref DiscordPublicKey
+          WORKER_TOPIC_ARN: !Ref AiDiscordChatbotTopic
       Events:
         AiDiscordChatbotApiEvents:
           Type: "Api"
@@ -42,6 +50,10 @@ Resources:
     Type: "AWS::Serverless::Function"
     Properties:
       CodeUri: "."
+      Environment:
+        Variables:
+          DISCORD_APPLICATION_ID: !Ref DiscordApplicationId
+          DISCORD_BOT_TOKEN: !Ref DiscordBotToken
       EventInvokeConfig:
         MaximumRetryAttempts: 0
       Events:
@@ -62,6 +74,10 @@ Resources:
     Type: "AWS::Serverless::Function"
     Properties:
       CodeUri: "."
+      Environment:
+        Variables:
+          DISCORD_APPLICATION_ID: !Ref DiscordApplicationId
+          DISCORD_BOT_TOKEN: !Ref DiscordBotToken
       EventInvokeConfig:
         MaximumRetryAttempts: 0
       Events:
@@ -101,6 +117,9 @@ Resources:
                   - "logs:PutLogEvents"
                   - "sns:Publish"
                   - "sns:Subscribe"
-                  - "ssm:GetParameter"
                 Resource: "*"
-      RoleName: "ai-discord-chatbot-function-role"
+
+  Outputs:
+    InteractionsEndpointURL:
+      Description: "Endpoint URL for Discord Interactions"
+      Value: !Sub "https://${AiDiscordChatbotApiGateway}.execute-api.${AWS::Region}.amazonaws.com/v1"

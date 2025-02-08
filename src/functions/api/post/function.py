@@ -1,9 +1,13 @@
 import json
+import os
 from enum import Enum
 
 import boto3
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
+
+DISCORD_PUBLIC_KEY = os.environ["DISCORD_PUBLIC_KEY"]
+WORKER_TOPIC_ARN = os.environ["WORKER_TOPIC_ARN"]
 
 
 class InteractionRequestType(Enum):
@@ -18,19 +22,11 @@ class InteractionResponseType(Enum):
 
 
 def _validate(headers, raw_body):
-    message = f"{headers['x-signature-timestamp']}{raw_body}".encode()
-    signature = bytes.fromhex(headers["x-signature-ed25519"])
-
-    ssm_client = boto3.client("ssm")
-    response = ssm_client.get_parameter(
-        Name="/AI_DISCORD_CHATBOT/PUBLIC_KEY",
-        WithDecryption=True,
-    )
-    public_key = response["Parameter"]["Value"]
-    verify_key = VerifyKey(bytes.fromhex(public_key))
-
     try:
-        verify_key.verify(message, signature)
+        VerifyKey(bytes.fromhex(DISCORD_PUBLIC_KEY)).verify(
+            smessage=f"{headers['x-signature-timestamp']}{raw_body}".encode(),
+            signature=bytes.fromhex(headers["x-signature-ed25519"]),
+        )
     except BadSignatureError:
         return False
 
@@ -38,13 +34,9 @@ def _validate(headers, raw_body):
 
 
 def _publish(message, message_attributes):
-    ssm_client = boto3.client("ssm")
-    response = ssm_client.get_parameter(Name="/AI_DISCORD_CHATBOT/TOPIC_ARN")
-    topic_arn = response["Parameter"]["Value"]
-
     sns_client = boto3.client("sns")
     sns_client.publish(
-        TopicArn=topic_arn,
+        TopicArn=WORKER_TOPIC_ARN,
         Message=message,
         MessageAttributes=message_attributes,
     )
@@ -79,7 +71,7 @@ def _handle_interaction(request):
                 }
             )
         case _:
-            ValueError(f"Interaction type: {interaction_type} is not supported.")
+            ValueError(f"'{request_type}' is not supported.")
 
 
 def handler(event, context):

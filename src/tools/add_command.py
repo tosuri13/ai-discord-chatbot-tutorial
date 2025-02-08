@@ -1,28 +1,16 @@
 import json
+import os
 
-import boto3
 import requests
 
-
-def _get_parameter(key):
-    ssm_client = boto3.client("ssm")
-
-    response = ssm_client.get_parameter(
-        Name=key,
-        WithDecryption=True,
-    )
-
-    return response["Parameter"]["Value"]
-
+DISCORD_APPLICATION_ID = os.environ["DISCORD_APPLICATION_ID"]
+DISCORD_BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 
 if __name__ == "__main__":
-    application_id = _get_parameter(key="/AI_DISCORD_CHATBOT/APPLICATION_ID")
-    bot_token = _get_parameter(key="/AI_DISCORD_CHATBOT/BOT_TOKEN")
-
     response = requests.post(
-        url=f"https://discord.com/api/v10/applications/{application_id}/commands",
+        url=f"https://discord.com/api/v10/applications/{DISCORD_APPLICATION_ID}/commands",
         headers={
-            "Authorization": f"Bot {bot_token}",
+            "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
             "Content-Type": "application/json",
         },
         data=json.dumps(
