@@ -119,7 +119,7 @@ Resources:
                   - "sns:Subscribe"
                 Resource: "*"
 
-  Outputs:
-    InteractionsEndpointURL:
-      Description: "Endpoint URL for Discord Interactions"
-      Value: !Sub "https://${AiDiscordChatbotApiGateway}.execute-api.${AWS::Region}.amazonaws.com/v1"
+Outputs:
+  InteractionsEndpointURL:
+    Description: "Endpoint URL for Discord Interactions"
+    Value: !Sub "https://${AiDiscordChatbotApiGateway}.execute-api.${AWS::Region}.amazonaws.com/v1"
