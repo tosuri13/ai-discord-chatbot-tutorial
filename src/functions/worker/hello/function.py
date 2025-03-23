@@ -10,30 +10,23 @@ DISCORD_BOT_TOKEN = os.environ["DISCORD_BOT_TOKEN"]
 
 def handler(event: dict, context: dict):
     try:
-        for record in event["Records"]:
-            message = record["Sns"]["Message"]
-            request = json.loads(message)
+        message = event["Records"][0]["Sns"]["Message"]
+        request = json.loads(message)
 
-            time.sleep(10)
+        time.sleep(10)
 
-            response = requests.post(
-                url=f"https://discord.com/api/v10/webhooks/{DISCORD_APPLICATION_ID}/{request['token']}",
-                data=json.dumps(
-                    {
-                        "content": "Hello!!",
-                    }
-                ),
-                headers={
-                    "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
-                    "Content-Type": "application/json",
-                },
-            )
+        # Discord APIを使用して、「Hello!!」という固定のメッセージを送信する
+        requests.post(
+            url=f"https://discord.com/api/v10/webhooks/{DISCORD_APPLICATION_ID}/{request['token']}",
+            data=json.dumps({"content": "Hello!!"}),
+            headers={
+                "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
+                "Content-Type": "application/json",
+            },
+        )
+    except Exception as exception:
+        print(f"{type(exception).__name__}: {exception}")
 
-            if response.status_code != 200:
-                raise ValueError(f"Discord API call failed: {response.text}")
-
-        return None
-    except Exception as e:
-        print(f"[ERROR] {type(e).__name__}: {e}")
-
-        raise e
+        return {
+            "statusCode": 500,
+        }
