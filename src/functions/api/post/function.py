@@ -51,6 +51,9 @@ def handler(event, context):
                     "statusCode": 200,
                     "body": json.dumps({"type": 5}),
                 }
+            case _:
+                ValueError(f"'{request['type']}' is not supported.")
+
     except Exception as exception:
         print(f"{type(exception).__name__}: {exception}")
 
