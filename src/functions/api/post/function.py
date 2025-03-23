@@ -3,8 +3,8 @@ def handler(event, context):
         return {
             "statusCode": 200,
         }
-    except Exception as e:
-        print(f"[ERROR] {type(e).__name__}: {e}")
+    except Exception as exception:
+        print(f"{type(exception).__name__}: {exception}")
 
         return {
             "statusCode": 500,
