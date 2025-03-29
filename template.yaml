@@ -1,0 +1,125 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+
+Parameters:
+  DiscordApplicationId:
+    Type: String
+    Description: "Application ID for Discord Bot"
+  DiscordBotToken:
+    Type: String
+    Description: "Bot Token for Discord Bot"
+  DiscordPublicKey:
+    Type: String
+    Description: "Public Key for Discord Bot"
+
+Resources:
+  AiDiscordChatbotApiGateway:
+    Type: "AWS::Serverless::Api"
+    Properties:
+      Name: "ai-discord-chatbot-api"
+      OpenApiVersion: "3.0.0"
+      StageName: "v1"
+
+  AiDiscordChatbotTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: "ai-discord-chatbot-topic"
+
+  AiDiscordChatbotApiPostFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      CodeUri: "."
+      Environment:
+        Variables:
+          DISCORD_PUBLIC_KEY: !Ref DiscordPublicKey
+          WORKER_TOPIC_ARN: !Ref AiDiscordChatbotTopic
+      Events:
+        AiDiscordChatbotApiEvents:
+          Type: "Api"
+          Properties:
+            Path: "/"
+            Method: "POST"
+            RestApiId: !Ref AiDiscordChatbotApiGateway
+      FunctionName: "ai-discord-chatbot-api-post-function"
+      Handler: "src.functions.api.post.function.handler"
+      MemorySize: 512
+      Role: !GetAtt AiDiscordChatbotFunctionRole.Arn
+      Runtime: "python3.11"
+
+  AiDiscordChatbotWorkerHelloFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      CodeUri: "."
+      Environment:
+        Variables:
+          DISCORD_APPLICATION_ID: !Ref DiscordApplicationId
+          DISCORD_BOT_TOKEN: !Ref DiscordBotToken
+      EventInvokeConfig:
+        MaximumRetryAttempts: 0
+      Events:
+        AiDiscordChatbotSnsEvents:
+          Type: "SNS"
+          Properties:
+            FilterPolicy:
+              command:
+                - "hello"
+            Topic: !Ref AiDiscordChatbotTopic
+      FunctionName: "ai-discord-chatbot-worker-hello-function"
+      Handler: "src.functions.worker.hello.function.handler"
+      Role: !GetAtt AiDiscordChatbotFunctionRole.Arn
+      Runtime: "python3.11"
+      Timeout: 60
+
+  AiDiscordChatbotWorkerAskFunction:
+    Type: "AWS::Serverless::Function"
+    Properties:
+      CodeUri: "."
+      Environment:
+        Variables:
+          DISCORD_APPLICATION_ID: !Ref DiscordApplicationId
+          DISCORD_BOT_TOKEN: !Ref DiscordBotToken
+      EventInvokeConfig:
+        MaximumRetryAttempts: 0
+      Events:
+        AiDiscordChatbotSnsEvents:
+          Type: "SNS"
+          Properties:
+            FilterPolicy:
+              command:
+                - "ask"
+            Topic: !Ref AiDiscordChatbotTopic
+      FunctionName: "ai-discord-chatbot-worker-ask-function"
+      Handler: "src.functions.worker.ask.function.handler"
+      Role: !GetAtt AiDiscordChatbotFunctionRole.Arn
+      Runtime: "python3.11"
+      Timeout: 60
+
+  AiDiscordChatbotFunctionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: "ai-discord-chatbot-function-policy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action: 
+                  - "bedrock:InvokeModel"
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                  - "sns:Publish"
+                  - "sns:Subscribe"
+                Resource: "*"
+
+Outputs:
+  InteractionsEndpointURL:
+    Description: "Endpoint URL for Discord Interactions"
+    Value: !Sub "https://${AiDiscordChatbotApiGateway}.execute-api.${AWS::Region}.amazonaws.com/v1"

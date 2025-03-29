@@ -13,6 +13,7 @@ def handler(event: dict, context: dict):
         message = event["Records"][0]["Sns"]["Message"]
         request = json.loads(message)
 
+        # タイムアウト回避の確認のため、10秒のディレイを発生させる
         time.sleep(10)
 
         # Discord APIを使用して、「Hello!!」という固定のメッセージを送信する
@@ -26,7 +27,3 @@ def handler(event: dict, context: dict):
         )
     except Exception as exception:
         print(f"{type(exception).__name__}: {exception}")
-
-        return {
-            "statusCode": 500,
-        }

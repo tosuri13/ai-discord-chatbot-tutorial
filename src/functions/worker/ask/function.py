@@ -60,7 +60,3 @@ def handler(event, context):
         )
     except Exception as exception:
         print(f"{type(exception).__name__}: {exception}")
-
-        return {
-            "statusCode": 500,
-        }
