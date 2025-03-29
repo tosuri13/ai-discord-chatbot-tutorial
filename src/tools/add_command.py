@@ -30,5 +30,4 @@ if __name__ == "__main__":
         ),
     )
 
-    if response.status_code == 200:
-        print("コマンドの送信に成功しました!!")
+    print(response.status_code)
