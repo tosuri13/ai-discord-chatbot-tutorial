@@ -23,6 +23,7 @@ def handler(event, context):
             }
 
         request = json.loads(event["body"])
+
         match request["type"]:
             # RequestType: PING(1)の場合
             case 1:
@@ -53,7 +54,6 @@ def handler(event, context):
                 }
             case _:
                 ValueError(f"'{request['type']}' is not supported.")
-
     except Exception as exception:
         print(f"{type(exception).__name__}: {exception}")
 
